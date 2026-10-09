@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Fondo circular rosado suave con borde -->
+  <circle cx="32" cy="32" r="31" fill="#FFF2F6" stroke="#FF6B97" stroke-width="2"/>
+  <circle cx="32" cy="32" r="28" fill="#FFF9F2" stroke="#FF85A2" stroke-width="1.2" stroke-dasharray="3 2"/>
+
+  <!-- Luna tierna durmiente -->
+  <path d="M36 14C27.5 14 20.8 20.7 20.8 29.2C20.8 35.8 24.9 41.4 30.7 43.6C27.3 41 25.1 36.9 25.1 32.3C25.1 23.9 31.9 17.1 40.3 17.1C41.7 17.1 43 17.3 44.3 17.7C42.4 15.3 39.4 14 36 14Z" fill="#FFD54F" stroke="#F6BE22" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Ojo durmiente sonriente de la luna -->
+  <path d="M30 28C31 30 33 30 34 28" stroke="#7E57C2" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- Estrellita dorada -->
+  <path d="M43 23L44 26L47 27L44 28L43 31L42 28L39 27L42 26Z" fill="#FFF176" stroke="#F6BE22" stroke-width="0.8"/>
+  <path d="M19 36L19.8 38L22 38.8L19.8 39.6L19 42L18.2 39.6L16 38.8L18.2 38Z" fill="#7E57C2"/>
+
+  <!-- Corazoncito rosado -->
+  <path d="M37 42C37 42 33 38 33 35.5C33 33.5 35 32 37 33.5C39 32 41 33.5 41 35.5C41 38 37 42 37 42Z" fill="#FF6B97"/>
+</svg>
