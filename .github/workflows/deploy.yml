@@ -35,10 +35,10 @@ jobs:
 
       - name: Build
         env:
-          VITE_SUPABASE_URL: https://bmcxhzjkjrvfvoqfloeo.supabase.co
-          VITE_SUPABASE_ANON_KEY: sb_publishable_DrtTGkEhTF7Hbn3_7lN1wQ_aMKTsd3a
-          VITE_WHATSAPP_PHONE: 59176019221
-          VITE_STORE_NAME: 'Luna Clara'
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://hwdgcmzcgnnoqbybqher.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_g2Fb5T_QgBD7WADj3L2QYw_hxaxNEoo' }}
+          VITE_WHATSAPP_PHONE: ${{ secrets.VITE_WHATSAPP_PHONE || '59170095775' }}
+          VITE_STORE_NAME: ${{ secrets.VITE_STORE_NAME || 'PIJAMAS MAFIRO' }}
         run: npm run build
 
       - name: Setup Pages

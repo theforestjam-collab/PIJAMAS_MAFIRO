@@ -9,9 +9,9 @@ export default function Hero({ onExploreClick }) {
   return (
     <section className="hero-luxury" style={{ padding: '3.5rem 0 3.75rem', position: 'relative' }}>
       <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-        
+
         <div style={{ maxWidth: '820px', margin: '0 auto', textAlign: 'center' }}>
-          
+
           {/* Logo Central Destacado */}
           <div style={{
             display: 'inline-block',
@@ -58,7 +58,7 @@ export default function Hero({ onExploreClick }) {
               boxShadow: '0 4px 10px rgba(255, 213, 79, 0.4)',
               transform: 'rotate(12deg)'
             }}
-            title="Ternura y descanso"
+              title="Ternura y descanso"
             >
               <Moon size={18} color="#F59E0B" fill="#FFD54F" />
             </div>
@@ -116,7 +116,7 @@ export default function Hero({ onExploreClick }) {
             letterSpacing: '-0.02em',
             fontFamily: 'var(--font-serif)'
           }}>
-            Comodidad, estilo y ternura <span style={{ 
+            Comodidad, estilo y ternura <span style={{
               background: 'linear-gradient(135deg, #FF6B97 0%, #7E57C2 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -187,7 +187,7 @@ export default function Hero({ onExploreClick }) {
             </div>
             <div style={{ textAlign: 'left' }}>
               <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--brand-dark)' }}>Telas Suaves & Cómodas</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--brand-muted)' }}>Satén, algodón pima y polar térmico</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--brand-muted)' }}>Calidad y frescura para tu descanso</div>
             </div>
           </div>
 
