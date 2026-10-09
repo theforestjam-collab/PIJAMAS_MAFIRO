@@ -1,9 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { compressImageToWebP } from './imageOptimizer.js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
-export const WHATSAPP_PHONE = import.meta.env.VITE_WHATSAPP_PHONE || '59176019221';
-export const STORE_NAME = import.meta.env.VITE_STORE_NAME || 'Luna Clara';
+const metaEnv = (typeof import.meta !== 'undefined' && import.meta.env) ? import.meta.env : (typeof process !== 'undefined' && process.env ? process.env : {});
+const supabaseUrl = metaEnv.VITE_SUPABASE_URL || metaEnv.SUPABASE_URL || '';
+const supabaseAnonKey = metaEnv.VITE_SUPABASE_ANON_KEY || metaEnv.SUPABASE_PUBLISHABLE_KEY || metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+export const WHATSAPP_PHONE = metaEnv.VITE_WHATSAPP_PHONE || '59170095775';
+export const STORE_NAME = metaEnv.VITE_STORE_NAME || 'Pijamas MAFIRO';
 
 // Verifica si las credenciales de Supabase han sido configuradas
 export const isSupabaseConfigured = () => {
@@ -21,13 +23,13 @@ export const supabase = isSupabaseConfigured()
   : null;
 
 // Clave para almacenamiento de demostración local si Supabase no está conectado
-const LOCAL_STORAGE_KEY = 'luna_clara_demo_products_v1';
-const LOCAL_AUTH_KEY = 'luna_clara_demo_auth_session';
+const LOCAL_STORAGE_KEY = 'mafiro_demo_products_v1';
+const LOCAL_AUTH_KEY = 'mafiro_demo_auth_session';
 
 // Normalizador y extractor de variantes para garantizar compatibilidad retroactiva total
 export function cleanProductDescription(description) {
   if (!description) return '';
-  return description.replace(/<!--LC_VAR:.*?-->/gs, '').trim();
+  return description.replace(/<!--(?:LC_VAR|MF_VAR):.*?-->/gs, '').trim();
 }
 
 export function normalizeProductVariants(product) {
@@ -49,9 +51,9 @@ export function normalizeProductVariants(product) {
   }
 
   // 2. Si tiene metadatos incrustados en descripcion (estrategia de persistencia de respaldo)
-  if (product.descripcion && product.descripcion.includes('<!--LC_VAR:')) {
+  if (product.descripcion && (product.descripcion.includes('<!--LC_VAR:') || product.descripcion.includes('<!--MF_VAR:'))) {
     try {
-      const match = product.descripcion.match(/<!--LC_VAR:(.*?)-->/s);
+      const match = product.descripcion.match(/<!--(?:LC_VAR|MF_VAR):(.*?)-->/s);
       if (match && match[1]) {
         const parsed = JSON.parse(match[1]);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -90,106 +92,106 @@ export function normalizeProductVariants(product) {
   }];
 }
 
-// Productos iniciales de alta costura para demostración
+// Productos iniciales de pijamas para demostración
 export const INITIAL_DEMO_PRODUCTS = [
   {
     id: 'prod-001',
     created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-    nombre: 'Vestido Midi Seda Champagne',
-    descripcion: 'Vestido midi confeccionado en satén de seda pura con escote fluido y espalda descubierta. Corte al bies para una caída perfecta y elegante.',
-    precio: 220.00,
-    tallas: ['XS', 'S', 'M', 'L', 'XL', '2'],
-    colores: ['Champagne', 'Negro Noche', 'Verde Esmeralda'],
-    cantidad_disponible: 6,
+    nombre: 'Pijama Satinado Sweet Dreams Rosa',
+    descripcion: 'Confeccionada en satén sedoso de alta densidad con vivos blancos contrastantes, botones perlados y bolsillo en pecho. Súper suave, fresca y delicada al tacto.',
+    precio: 135.00,
+    tallas: ['XS', 'S', 'M', 'L', 'XL'],
+    colores: ['Rosa Pastel', 'Lila Lavanda', 'Blanco Marfil'],
+    cantidad_disponible: 8,
     disponible: true,
-    imagen_url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80',
+    imagen_url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80',
     variantes: [
-      { id: 'v1-1', color: 'Champagne', tallas: ['XS', 'S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v1-2', color: 'Negro Noche', tallas: ['M', '2'], imagen_url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v1-3', color: 'Verde Esmeralda', tallas: ['XL', 'S'], imagen_url: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=80' }
+      { id: 'v1-1', color: 'Rosa Pastel', tallas: ['XS', 'S', 'M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v1-2', color: 'Lila Lavanda', tallas: ['S', 'M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v1-3', color: 'Blanco Marfil', tallas: ['M', 'L', 'XL'], imagen_url: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=80' }
     ]
   },
   {
     id: 'prod-002',
     created_at: new Date(Date.now() - 3600000 * 18).toISOString(),
-    nombre: 'Blazer Sastrero Oversized Crema',
-    descripcion: 'Blazer estructurado con solapas de pico, doble botonadura y forro satinado suave. Confección sastrera contemporánea que eleva cualquier conjunto.',
-    precio: 285.50,
+    nombre: 'Conjunto Pijama Nubes & Luna Algodón',
+    descripcion: 'Pijama de 2 piezas en algodón 100% pima con estampado de lunitas y nubes esponjosas. Pantalón con pretina elástica confortable que no aprieta.',
+    precio: 115.00,
     tallas: ['S', 'M', 'L', 'XL'],
-    colores: ['Crema Marfil', 'Camel', 'Negro'],
-    cantidad_disponible: 4,
+    colores: ['Lila Nube', 'Rosa Bebé', 'Crema Vainilla'],
+    cantidad_disponible: 6,
     disponible: true,
-    imagen_url: 'https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?auto=format&fit=crop&w=900&q=80',
+    imagen_url: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?auto=format&fit=crop&w=900&q=80',
     variantes: [
-      { id: 'v2-1', color: 'Crema Marfil', tallas: ['S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v2-2', color: 'Camel', tallas: ['M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v2-3', color: 'Negro', tallas: ['S', 'XL'], imagen_url: 'https://images.unsplash.com/photo-1548624149-f7b7cb2e8a15?auto=format&fit=crop&w=900&q=80' }
+      { id: 'v2-1', color: 'Lila Nube', tallas: ['S', 'M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v2-2', color: 'Rosa Bebé', tallas: ['S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v2-3', color: 'Crema Vainilla', tallas: ['M', 'L', 'XL'], imagen_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=900&q=80' }
     ]
   },
   {
     id: 'prod-003',
     created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-    nombre: 'Pantalón Palazzo Lino Orgánico',
-    descripcion: 'Pantalón de tiro alto con pretina estilizada y bolsillos laterales invisibles. Confeccionado en 100% lino orgánico suave y transpirable.',
-    precio: 165.00,
-    tallas: ['S', 'M', 'L', 'XL'],
-    colores: ['Beige Arena', 'Blanco Crudo', 'Terracota'],
-    cantidad_disponible: 9,
+    nombre: 'Pijama Térmico Teddy Osito Miel',
+    descripcion: 'Pijama abrigador en tejido polar fleece ultra esponjoso con detalles tiernos y bolsillos. La máxima suavidad para descansar en noches frescas.',
+    precio: 155.00,
+    tallas: ['S', 'M', 'L'],
+    colores: ['Miel Dorado', 'Rosa Chicle', 'Lavanda'],
+    cantidad_disponible: 4,
     disponible: true,
-    imagen_url: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=80',
+    imagen_url: 'https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?auto=format&fit=crop&w=900&q=80',
     variantes: [
-      { id: 'v3-1', color: 'Beige Arena', tallas: ['S', 'M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v3-2', color: 'Blanco Crudo', tallas: ['M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v3-3', color: 'Terracota', tallas: ['S', 'XL'], imagen_url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80' }
+      { id: 'v3-1', color: 'Miel Dorado', tallas: ['S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1584273143981-41c073dfe8f8?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v3-2', color: 'Rosa Chicle', tallas: ['M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v3-3', color: 'Lavanda', tallas: ['S', 'L'], imagen_url: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?auto=format&fit=crop&w=900&q=80' }
     ]
   },
   {
     id: 'prod-004',
     created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
-    nombre: 'Conjunto Top & Falda Plisada Noir',
-    descripcion: 'Conjunto de dos piezas en gasa plisada premium. Top con escote cruzado y falda midi con movimiento fluido y cintura elástica delicada.',
-    precio: 310.00,
-    tallas: ['XS', 'S', 'M'],
-    colores: ['Negro Noir', 'Azul Zafiro'],
-    cantidad_disponible: 2,
+    nombre: 'Pijama Short & Blusa Coquette Sweetheart',
+    descripcion: 'Conjunto veraniego súper tierno con blusa de tirantes ajustables y lazo coqueto en pecho, acompañado de short con voladitos suaves.',
+    precio: 95.00,
+    tallas: ['XS', 'S', 'M', 'L'],
+    colores: ['Rosa Coquette', 'Blanco Puro', 'Lila Suave'],
+    cantidad_disponible: 7,
     disponible: true,
-    imagen_url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80',
+    imagen_url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80',
     variantes: [
-      { id: 'v4-1', color: 'Negro Noir', tallas: ['XS', 'S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v4-2', color: 'Azul Zafiro', tallas: ['S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=900&q=80' }
+      { id: 'v4-1', color: 'Rosa Coquette', tallas: ['XS', 'S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v4-2', color: 'Blanco Puro', tallas: ['S', 'M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v4-3', color: 'Lila Suave', tallas: ['M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=80' }
     ]
   },
   {
     id: 'prod-005',
     created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
-    nombre: 'Blusa de Gasa & Mangas Obispo',
-    descripcion: 'Delicada blusa con transparencias sutiles, botonadura oculta y mangas voluminosas con puños ajustados. Una prenda romántica y atemporal.',
-    precio: 145.00,
-    tallas: ['S', 'M', 'L'],
-    colores: ['Blanco Perla', 'Rosa Palo'],
-    cantidad_disponible: 5,
+    nombre: 'Pijama Camisero Clásico Lavender Dream',
+    descripcion: 'Pijama camisero manga larga y pantalón en seda fría lavanda con detalles de botones nacarados. Elegancia, frescura y comodidad absoluta.',
+    precio: 140.00,
+    tallas: ['S', 'M', 'L', 'XL'],
+    colores: ['Lavanda MAFIRO', 'Rosa Dulce'],
+    cantidad_disponible: 3,
     disponible: true,
-    imagen_url: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?auto=format&fit=crop&w=900&q=80',
+    imagen_url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80',
     variantes: [
-      { id: 'v5-1', color: 'Blanco Perla', tallas: ['S', 'M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v5-2', color: 'Rosa Palo', tallas: ['M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80' }
+      { id: 'v5-1', color: 'Lavanda MAFIRO', tallas: ['S', 'M', 'L'], imagen_url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v5-2', color: 'Rosa Dulce', tallas: ['M', 'L', 'XL'], imagen_url: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=80' }
     ]
   },
   {
     id: 'prod-006',
     created_at: new Date(Date.now() - 3600000 * 1).toISOString(),
-    nombre: 'Top Asimétrico en Rib Fino',
-    descripcion: 'Top de un solo hombro en canalé de algodón peinado. Textura suave con ajuste anatómico que brinda soporte y estilo moderno.',
-    precio: 89.00,
-    tallas: ['Única', 'S', 'M'],
-    colores: ['Caramelo', 'Blanco', 'Negro'],
+    nombre: 'Conjunto Sleepy Bear Relaxed Fit',
+    descripcion: 'Remera holgada con estampado tierno y short relajado en algodón suave prelavado. Máxima comodidad para las horas de descanso y fines de semana.',
+    precio: 85.00,
+    tallas: ['Única', 'S', 'M', 'L'],
+    colores: ['Rosa Bebé', 'Amarillo Pastel'],
     cantidad_disponible: 0,
     disponible: false,
     imagen_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=900&q=80',
     variantes: [
-      { id: 'v6-1', color: 'Caramelo', tallas: ['Única', 'S'], imagen_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v6-2', color: 'Blanco', tallas: ['S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80' },
-      { id: 'v6-3', color: 'Negro', tallas: ['Única', 'M'], imagen_url: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=80' }
+      { id: 'v6-1', color: 'Rosa Bebé', tallas: ['Única', 'S', 'M'], imagen_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=900&q=80' },
+      { id: 'v6-2', color: 'Amarillo Pastel', tallas: ['S', 'L'], imagen_url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=900&q=80' }
     ]
   }
 ];
@@ -251,23 +253,41 @@ export async function getProducts() {
 }
 
 /**
- * Subir imagen al Storage de Supabase
+ * Subir imagen al Storage de Supabase con conversión y optimización WebP automática
  */
 export async function uploadProductImage(file) {
   if (!file) throw new Error('No se ha proporcionado ningún archivo');
 
+  // Optimizar y convertir automáticamente a WebP si es un Blob/File
+  let fileToUpload = file;
+  let isWebP = false;
+
+  try {
+    if (file instanceof Blob) {
+      const optimized = await compressImageToWebP(file, { maxWidth: 1200, maxHeight: 1500, quality: 0.82 });
+      if (optimized && optimized.file) {
+        fileToUpload = optimized.file;
+        isWebP = true;
+      }
+    }
+  } catch (optError) {
+    console.warn('Compresión WebP automática no completada, usando archivo original:', optError);
+  }
+
   if (isSupabaseConfigured() && supabase) {
-    // Sanitizar nombre de archivo y generar nombre único
-    const fileExt = file.name ? file.name.split('.').pop() : 'jpg';
-    const rawName = file.name ? file.name.split('.')[0] : 'variante';
+    // Sanitizar nombre de archivo y garantizar extensión .webp
+    const originalExt = fileToUpload.name ? fileToUpload.name.split('.').pop() : 'webp';
+    const fileExt = isWebP ? 'webp' : originalExt;
+    const rawName = fileToUpload.name ? fileToUpload.name.split('.')[0] : 'prenda';
     const cleanFileName = rawName.replace(/[^a-zA-Z0-9]/g, '_');
     const fileName = `${Date.now()}_${cleanFileName}.${fileExt}`;
     const filePath = `prendas/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('imagenes-productos')
-      .upload(filePath, file, {
+      .upload(filePath, fileToUpload, {
         cacheControl: '3600',
+        contentType: isWebP ? 'image/webp' : undefined,
         upsert: false
       });
 
@@ -287,7 +307,7 @@ export async function uploadProductImage(file) {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target.result);
       reader.onerror = () => reject(new Error('Error al procesar la imagen localmente'));
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(fileToUpload);
     });
   }
 }

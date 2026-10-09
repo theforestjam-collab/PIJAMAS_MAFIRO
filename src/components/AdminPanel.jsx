@@ -184,7 +184,7 @@ export default function AdminPanel({
                 Panel de Control — {STORE_NAME}
               </h1>
               <div style={{ fontSize: '0.75rem', color: '#A8A29E' }}>
-                Administrador: <span style={{ color: 'var(--gold-light)' }}>{adminUser?.email || 'admin@lunaclara.com'}</span>
+                Administrador: <span style={{ color: 'var(--brand-pink-light)' }}>{adminUser?.email || 'admin@mafiro.com'}</span>
               </div>
             </div>
           </div>

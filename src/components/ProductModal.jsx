@@ -264,15 +264,15 @@ export default function ProductModal({ product, onClose, isPreview = false }) {
             {/* Título y Precio en Bolivianos */}
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <Sparkles size={15} color="var(--gold-primary)" />
-                <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--gold-dark)', fontWeight: 600 }}>
-                  Prenda de Catálogo Exclusivo
+                <Sparkles size={15} color="var(--brand-pink)" />
+                <span style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-pink-deep)', fontWeight: 700 }}>
+                  Pijama MAFIRO • Catálogo Oficial
                 </span>
               </div>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--color-noir)', marginBottom: '0.4rem', fontFamily: 'var(--font-serif)' }}>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--brand-dark)', marginBottom: '0.4rem', fontFamily: 'var(--font-serif)' }}>
                 {product.nombre}
               </h2>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-noir)' }}>
+              <div style={{ fontSize: '1.65rem', fontWeight: 800, color: 'var(--brand-pink-deep)', fontFamily: 'var(--font-serif)' }}>
                 {formatPrice(product.precio)}
               </div>
             </div>
@@ -437,7 +437,7 @@ export default function ProductModal({ product, onClose, isPreview = false }) {
                   style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', justifyContent: 'center' }}
                 >
                   <MessageCircle size={20} />
-                  <span>Pedir {selectedColor ? `en ${selectedColor}` : 'esta prenda'} por WhatsApp</span>
+                  <span>Pedir {selectedColor ? `en ${selectedColor}` : 'esta pijama'} por WhatsApp</span>
                 </a>
               )}
 

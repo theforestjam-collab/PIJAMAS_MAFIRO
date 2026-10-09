@@ -1,52 +1,87 @@
 /* ============================================================
-   LUNA CLARA — DESIGN SYSTEM & LUXURY BOUTIQUE STYLES
+   PIJAMAS MAFIRO — SISTEMA DE DISEÑO & IDENTIDAD VISUAL
+   "Comodidad, estilo y ternura para cada momento"
    ============================================================ */
 
 :root {
-  /* Palette: Luxury Haute Couture & Boutique */
-  --color-noir: #12100E;
-  --color-charcoal: #1E1B18;
-  --color-stone: #2A2622;
-  --color-muted: #78716C;
-  --color-sand: #E7E3DC;
-  --color-cream: #F8F6F0;
-  --color-ivory: #FDFCF7;
+  /* Tokens de Marca MAFIRO */
+  --brand-pink: #FF6B97;
+  --brand-pink-light: #FF85A2;
+  --brand-pink-soft: #FFF0F4;
+  --brand-pink-deep: #E0527D;
+  --brand-pink-glow: rgba(255, 107, 151, 0.28);
+  --brand-pink-subtle: rgba(255, 107, 151, 0.12);
+
+  --brand-purple: #7E57C2;
+  --brand-purple-dark: #6C4AB6;
+  --brand-purple-soft: #F4EEFB;
+  --brand-purple-glow: rgba(126, 87, 194, 0.25);
+  --brand-purple-subtle: rgba(126, 87, 194, 0.12);
+
+  --brand-yellow: #FFD54F;
+  --brand-yellow-light: #FFF176;
+  --brand-yellow-soft: #FFFDE7;
+  --brand-yellow-border: #F6C83B;
+  --brand-yellow-glow: rgba(255, 213, 79, 0.35);
+
+  --brand-cream: #FFF9F2;
+  --brand-cream-soft: #FFFDF9;
+  --brand-border: #F5E5E8;
+  --brand-white: #FFFFFF;
+
+  --brand-dark: #4A2E35;
+  --brand-dark-soft: #3E2723;
+  --brand-muted: #876C73;
+  --brand-sand: #EFE0E3;
+
+  /* Aliases semánticos y de compatibilidad con componentes existentes */
+  --color-noir: var(--brand-dark);
+  --color-charcoal: var(--brand-dark-soft);
+  --color-stone: #5C3C44;
+  --color-muted: var(--brand-muted);
+  --color-sand: var(--brand-sand);
+  --color-cream: var(--brand-cream);
+  --color-ivory: var(--brand-cream-soft);
   --color-white: #FFFFFF;
 
-  /* Gold & Metallic Accents */
-  --gold-primary: #C5A059;
-  --gold-light: #DFBE7D;
-  --gold-dark: #9D7B38;
-  --gold-glow: rgba(197, 160, 89, 0.25);
-  --gold-subtle: rgba(197, 160, 89, 0.12);
+  /* Mapeo de acentos primarios a Rosa y Violeta Mafiro */
+  --gold-primary: var(--brand-pink);
+  --gold-light: var(--brand-pink-light);
+  --gold-dark: var(--brand-pink-deep);
+  --gold-glow: var(--brand-pink-glow);
+  --gold-subtle: var(--brand-pink-subtle);
 
   /* Status Colors */
   --status-available: #10B981;
-  --status-available-bg: rgba(16, 185, 129, 0.12);
+  --status-available-bg: #ECFDF5;
   --status-soldout: #E11D48;
-  --status-soldout-bg: rgba(225, 29, 72, 0.12);
+  --status-soldout-bg: #FFF1F2;
   --whatsapp-color: #25D366;
   --whatsapp-dark: #1EBE5D;
   --whatsapp-glow: rgba(37, 211, 102, 0.28);
 
-  /* Elevation & Shadows */
-  --shadow-sm: 0 2px 8px rgba(18, 16, 14, 0.04);
-  --shadow-md: 0 8px 24px rgba(18, 16, 14, 0.08);
-  --shadow-lg: 0 16px 36px rgba(18, 16, 14, 0.12);
-  --shadow-gold: 0 10px 30px var(--gold-glow);
+  /* Elevaciones & Sombras cálidas */
+  --shadow-sm: 0 3px 10px rgba(74, 46, 53, 0.05);
+  --shadow-md: 0 10px 26px rgba(74, 46, 53, 0.08);
+  --shadow-lg: 0 18px 40px rgba(74, 46, 53, 0.12);
+  --shadow-pink: 0 12px 30px var(--brand-pink-glow);
+  --shadow-purple: 0 12px 30px var(--brand-purple-glow);
+  --shadow-gold: var(--shadow-pink);
   --shadow-whatsapp: 0 10px 25px var(--whatsapp-glow);
 
-  /* Typography */
-  --font-serif: 'Playfair Display', Georgia, serif;
+  /* Tipografías amigables */
+  --font-serif: 'Quicksand', -apple-system, sans-serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-rounded: 'Quicksand', system-ui, sans-serif;
 
-  /* Radii */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  /* Bordes muy redondeados (coquette / sticker friendly) */
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
   --radius-full: 9999px;
 
-  /* Transitions */
+  /* Transiciones */
   --transition-fast: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-slow: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -68,38 +103,38 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-ivory);
-  color: var(--color-charcoal);
+  background-color: var(--brand-cream);
+  color: var(--brand-dark);
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
 }
 
-/* Custom Luxury Scrollbar */
+/* Custom Scrollbar dulce */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-cream);
+  background: var(--brand-cream);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-sand);
-  border-radius: 4px;
+  background: #F2D5DC;
+  border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-primary);
+  background: var(--brand-pink-light);
 }
 
-/* Typography Helpers */
-h1, h2, h3, h4, .font-serif {
+/* Encabezados con Quicksand */
+h1, h2, h3, h4, .font-serif, .font-heading {
   font-family: var(--font-serif);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.015em;
-  color: var(--color-noir);
+  color: var(--brand-dark);
 }
 
-/* Layout Utilities */
+/* Contenedor principal */
 .container {
   width: 100%;
   max-width: 1280px;
@@ -116,39 +151,41 @@ h1, h2, h3, h4, .font-serif {
   }
 }
 
-/* Header & Glass Navigation */
+/* Navbar con efecto Glass Pastel */
 .navbar-glass {
-  background: rgba(253, 252, 247, 0.88);
+  background: rgba(255, 249, 242, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(197, 160, 89, 0.18);
+  border-bottom: 1.5px solid rgba(255, 107, 151, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;
   transition: all var(--transition-fast);
 }
 
-/* Luxury Hero Banner */
+/* Hero Banner Mafiro */
 .hero-luxury {
-  background: radial-gradient(circle at 80% 20%, rgba(223, 190, 125, 0.15), transparent 50%),
-              radial-gradient(circle at 20% 80%, rgba(197, 160, 89, 0.1), transparent 50%),
-              linear-gradient(180deg, #181512 0%, #24201B 100%);
-  color: var(--color-ivory);
+  background: radial-gradient(circle at 15% 25%, rgba(255, 107, 151, 0.18), transparent 45%),
+              radial-gradient(circle at 85% 30%, rgba(126, 87, 194, 0.16), transparent 45%),
+              radial-gradient(circle at 50% 85%, rgba(255, 213, 79, 0.2), transparent 50%),
+              linear-gradient(180deg, #FFF0F4 0%, #FFF9F2 100%);
+  color: var(--brand-dark);
   position: relative;
   overflow: hidden;
+  border-bottom: 2px dashed rgba(255, 107, 151, 0.25);
 }
 
 .hero-luxury::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(197, 160, 89, 0.15) 1px, transparent 1px);
-  background-size: 28px 28px;
-  opacity: 0.4;
+  background-image: radial-gradient(rgba(255, 107, 151, 0.12) 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
+  opacity: 0.65;
   pointer-events: none;
 }
 
-/* Product Responsive Grid */
+/* Grid de Productos */
 .product-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -176,12 +213,12 @@ h1, h2, h3, h4, .font-serif {
   }
 }
 
-/* Luxury Product Card */
+/* Tarjeta de Producto Mafiro */
 .product-card {
-  background: var(--color-white);
-  border-radius: var(--radius-md);
+  background: var(--brand-cream-soft);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid rgba(231, 227, 220, 0.8);
+  border: 1.5px solid var(--brand-border);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-smooth);
   display: flex;
@@ -191,15 +228,15 @@ h1, h2, h3, h4, .font-serif {
 
 .product-card:hover {
   transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--gold-light);
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-pink-light);
 }
 
 .product-image-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
-  background: #EFECE6;
+  aspect-ratio: 1 / 1.15;
+  background: #FDF4F6;
   overflow: hidden;
 }
 
@@ -212,75 +249,74 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .product-card:hover .product-image {
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
-/* Badge System */
+/* Badges Sticker Style */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.3rem 0.65rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.32rem 0.75rem;
   border-radius: var(--radius-full);
 }
 
 .badge-available {
-  background: var(--status-available-bg);
-  color: #065F46;
+  background: #ECFDF5;
+  color: #047857;
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .badge-soldout {
-  background: var(--status-soldout-bg);
-  color: var(--status-soldout);
+  background: #FFF1F2;
+  color: #BE123C;
   border: 1px solid rgba(225, 29, 72, 0.3);
 }
 
 .badge-tag {
-  background: var(--color-cream);
-  color: var(--color-charcoal);
-  border: 1px solid var(--color-sand);
-  font-size: 0.7rem;
-  padding: 0.2rem 0.5rem;
+  background: var(--brand-pink-soft);
+  color: var(--brand-pink-deep);
+  border: 1px solid #FFD1DF;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.6rem;
   border-radius: var(--radius-sm);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .badge-color {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: var(--color-white);
-  border: 1px solid var(--color-sand);
-  padding: 0.2rem 0.6rem;
+  background: var(--brand-white);
+  border: 1px solid var(--brand-border);
+  padding: 0.25rem 0.65rem;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  font-size: 0.76rem;
 }
 
 .color-dot {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.15);
   display: inline-block;
 }
 
-/* Luxury Buttons */
+/* Botones con estilo dulce y redondeado */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 0.88rem;
-  padding: 0.75rem 1.4rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.45rem;
   border-radius: var(--radius-md);
-  border: 1px solid transparent;
+  border: 1.5px solid transparent;
   cursor: pointer;
   transition: all var(--transition-fast);
   text-decoration: none;
@@ -288,45 +324,63 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
-.btn-gold {
-  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
-  color: var(--color-noir);
-  box-shadow: 0 4px 14px var(--gold-glow);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+/* Botón Principal Brand (Rosa Mafiro) */
+.btn-primary, .btn-gold {
+  background: linear-gradient(135deg, var(--brand-pink) 0%, var(--brand-pink-light) 100%);
+  color: white;
+  box-shadow: var(--shadow-pink);
+  border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
-.btn-gold:hover {
-  background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
-  color: var(--color-white);
-  box-shadow: 0 6px 20px var(--gold-glow);
+.btn-primary:hover, .btn-gold:hover {
+  background: linear-gradient(135deg, var(--brand-pink-deep) 0%, var(--brand-pink) 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255, 107, 151, 0.38);
 }
 
+/* Botón Violeta Mafiro */
+.btn-purple {
+  background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-purple-dark) 100%);
+  color: white;
+  box-shadow: var(--shadow-purple);
+}
+
+.btn-purple:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+/* Botón Dark (Chocolate cálido) */
 .btn-dark {
-  background: var(--color-noir);
-  color: var(--color-ivory);
-  border: 1px solid var(--color-stone);
+  background: var(--brand-dark);
+  color: var(--brand-cream);
+  border: 1px solid #5C3C44;
 }
 
 .btn-dark:hover {
-  background: var(--color-stone);
-  color: var(--color-white);
+  background: var(--brand-dark-soft);
+  color: white;
+  transform: translateY(-2px);
 }
 
+/* Botón Outline */
 .btn-outline {
   background: transparent;
-  color: var(--color-charcoal);
-  border: 1px solid var(--color-sand);
+  color: var(--brand-dark);
+  border: 1.5px solid var(--brand-border);
 }
 
 .btn-outline:hover {
-  border-color: var(--gold-primary);
-  color: var(--gold-dark);
-  background: var(--gold-subtle);
+  border-color: var(--brand-pink);
+  color: var(--brand-pink-deep);
+  background: var(--brand-pink-soft);
 }
 
+/* Botón WhatsApp */
 .btn-whatsapp {
   background: linear-gradient(135deg, var(--whatsapp-color) 0%, var(--whatsapp-dark) 100%);
   color: var(--color-white);
@@ -350,11 +404,11 @@ h1, h2, h3, h4, .font-serif {
   transform: none;
 }
 
-/* Interactive Modals */
+/* Modales amigables */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(18, 16, 14, 0.7);
+  background: rgba(74, 46, 53, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 999;
@@ -367,12 +421,12 @@ h1, h2, h3, h4, .font-serif {
 }
 
 .modal-content {
-  background: var(--color-white);
+  background: var(--brand-cream-soft);
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(197, 160, 89, 0.25);
+  border: 2px solid var(--brand-border);
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 620px;
+  max-width: 640px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
@@ -395,7 +449,7 @@ h1, h2, h3, h4, .font-serif {
   }
 }
 
-/* Floating WhatsApp Badge */
+/* Botón flotante de WhatsApp */
 .floating-whatsapp {
   position: fixed;
   bottom: 1.5rem;
@@ -435,12 +489,13 @@ h1, h2, h3, h4, .font-serif {
 
 .toast {
   pointer-events: auto;
-  background: var(--color-noir);
-  color: var(--color-white);
+  background: var(--brand-cream-soft);
+  color: var(--brand-dark);
   padding: 1rem 1.25rem;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
-  border-left: 4px solid var(--gold-primary);
+  border: 1.5px solid var(--brand-border);
+  border-left: 5px solid var(--brand-pink);
   display: flex;
   align-items: flex-start;
   gap: 0.85rem;
@@ -468,17 +523,17 @@ h1, h2, h3, h4, .font-serif {
   padding: 0.75rem 1rem;
   font-family: var(--font-sans);
   font-size: 0.95rem;
-  border: 1px solid var(--color-sand);
+  border: 1.5px solid var(--brand-border);
   border-radius: var(--radius-md);
-  background: var(--color-white);
-  color: var(--color-charcoal);
+  background: var(--brand-white);
+  color: var(--brand-dark);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   outline: none;
 }
 
 .input-field:focus {
-  border-color: var(--gold-primary);
-  box-shadow: 0 0 0 3px var(--gold-glow);
+  border-color: var(--brand-pink);
+  box-shadow: 0 0 0 3.5px var(--brand-pink-subtle);
 }
 
 /* Switch UI */
@@ -493,14 +548,14 @@ h1, h2, h3, h4, .font-serif {
 .switch-track {
   width: 44px;
   height: 24px;
-  background: #E5E7EB;
+  background: #E8D8DB;
   border-radius: 12px;
   position: relative;
   transition: background var(--transition-fast);
 }
 
 .switch-track.active {
-  background: var(--gold-primary);
+  background: var(--brand-pink);
 }
 
 .switch-thumb {

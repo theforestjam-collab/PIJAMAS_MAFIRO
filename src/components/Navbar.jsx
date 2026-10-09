@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { STORE_NAME, WHATSAPP_PHONE } from '../lib/supabase';
-import { Sparkles, MessageCircle, ShieldCheck, Menu, X, ShoppingBag } from 'lucide-react';
+import { WHATSAPP_PHONE } from '../lib/supabase';
+import { MessageCircle, ShieldCheck, Menu, X, ShoppingBag } from 'lucide-react';
 
 export default function Navbar({ currentView, setCurrentView, adminUser, onOpenAdmin }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,57 +12,60 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
   };
 
   const cleanPhone = WHATSAPP_PHONE.replace(/[^0-9]/g, '');
-  const generalWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`¡Hola ${STORE_NAME}! Me gustaría recibir información de su catálogo.`)}`;
+  const generalWhatsAppUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`¡Hola Pijamas MAFIRO! Me gustaría consultar sobre su catálogo de pijamas y disponibilidad.`)}`;
 
   return (
     <nav className="navbar-glass">
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '72px' }}>
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '76px' }}>
         
-        {/* Brand Logo */}
+        {/* Brand Logo Circular */}
         <div 
           onClick={() => handleNavClick('catalog')} 
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', userSelect: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', cursor: 'pointer', userSelect: 'none' }}
         >
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #24201B 0%, #12100E 100%)',
-            border: '1px solid var(--gold-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(197, 160, 89, 0.2)'
-          }}>
-            <Sparkles size={20} color="var(--gold-light)" />
-          </div>
+          <img
+            src="./logo-mafiro.png"
+            alt="Pijamas MAFIRO"
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '2px solid var(--brand-pink)',
+              boxShadow: '0 4px 14px var(--brand-pink-glow)',
+              backgroundColor: '#FFFFFF',
+              flexShrink: 0
+            }}
+          />
           <div>
             <span style={{ 
               fontFamily: 'var(--font-serif)', 
-              fontSize: '1.45rem', 
-              fontWeight: 700, 
-              color: 'var(--color-noir)',
+              fontSize: '1.38rem', 
+              fontWeight: 800, 
+              color: 'var(--brand-dark)',
               letterSpacing: '-0.02em',
               display: 'block',
-              lineHeight: 1.1
+              lineHeight: 1.15
             }}>
-              {STORE_NAME}
+              Pijamas <span style={{ color: 'var(--brand-purple)' }}>MAFIRO</span>
             </span>
             <span style={{ 
               fontSize: '0.68rem', 
               textTransform: 'uppercase', 
-              letterSpacing: '0.2em', 
-              color: 'var(--gold-dark)', 
-              fontWeight: 600,
-              display: 'block'
+              letterSpacing: '0.12em', 
+              color: 'var(--brand-pink-deep)', 
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem'
             }}>
-              Haute Boutique
+              <span>❤</span> Y MUCHO MÁS <span>❤</span>
             </span>
           </div>
         </div>
 
         {/* Desktop Navigation Links */}
-        <div style={{ display: 'none', alignItems: 'center', gap: '1.5rem' }} className="desktop-nav">
+        <div style={{ display: 'none', alignItems: 'center', gap: '1.25rem' }} className="desktop-nav">
           <button
             onClick={() => handleNavClick('catalog')}
             style={{
@@ -70,23 +73,23 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
               border: 'none',
               cursor: 'pointer',
               fontFamily: 'var(--font-sans)',
-              fontSize: '0.9rem',
-              fontWeight: currentView === 'catalog' ? 700 : 500,
-              color: currentView === 'catalog' ? 'var(--gold-dark)' : 'var(--color-charcoal)',
+              fontSize: '0.92rem',
+              fontWeight: currentView === 'catalog' ? 700 : 600,
+              color: currentView === 'catalog' ? 'var(--brand-pink-deep)' : 'var(--brand-dark)',
               padding: '0.4rem 0.6rem',
               position: 'relative'
             }}
           >
-            Catálogo
+            Catálogo de Pijamas
             {currentView === 'catalog' && (
               <span style={{
                 position: 'absolute',
                 bottom: -2,
                 left: '10%',
                 right: '10%',
-                height: '2px',
-                background: 'var(--gold-primary)',
-                borderRadius: '2px'
+                height: '2.5px',
+                background: 'var(--brand-pink)',
+                borderRadius: '3px'
               }} />
             )}
           </button>
@@ -96,9 +99,9 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-whatsapp"
-            style={{ padding: '0.55rem 1.1rem', fontSize: '0.84rem' }}
+            style={{ padding: '0.55rem 1.15rem', fontSize: '0.86rem' }}
           >
-            <MessageCircle size={17} />
+            <MessageCircle size={18} />
             <span>Consultas WhatsApp</span>
           </a>
 
@@ -108,14 +111,14 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
             style={{ 
               padding: '0.55rem 1.1rem', 
               fontSize: '0.84rem',
-              background: adminUser ? '#1C1917' : 'transparent',
-              color: adminUser ? 'var(--gold-light)' : 'var(--color-muted)',
-              borderColor: adminUser ? 'var(--gold-primary)' : 'var(--color-sand)'
+              background: adminUser ? 'var(--brand-purple)' : 'transparent',
+              color: adminUser ? 'white' : 'var(--brand-muted)',
+              borderColor: adminUser ? 'var(--brand-purple-dark)' : 'var(--brand-border)'
             }}
             title="Acceso al Panel de Administración"
           >
-            <ShieldCheck size={16} color={adminUser ? 'var(--gold-light)' : 'currentColor'} />
-            <span>{adminUser ? 'Admin Conectado' : 'Panel Admin'}</span>
+            <ShieldCheck size={16} color={adminUser ? 'white' : 'currentColor'} />
+            <span>{adminUser ? 'Admin Activo' : 'Panel Admin'}</span>
           </button>
         </div>
 
@@ -124,12 +127,12 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
           <button
             onClick={onOpenAdmin}
             style={{
-              background: adminUser ? 'var(--gold-subtle)' : 'transparent',
-              border: '1px solid',
-              borderColor: adminUser ? 'var(--gold-primary)' : 'var(--color-sand)',
-              padding: '0.45rem',
+              background: adminUser ? 'var(--brand-purple-soft)' : 'transparent',
+              border: '1.5px solid',
+              borderColor: adminUser ? 'var(--brand-purple)' : 'var(--brand-border)',
+              padding: '0.5rem',
               borderRadius: 'var(--radius-sm)',
-              color: adminUser ? 'var(--gold-dark)' : 'var(--color-charcoal)',
+              color: adminUser ? 'var(--brand-purple)' : 'var(--brand-dark)',
               cursor: 'pointer'
             }}
             title="Panel Admin"
@@ -141,10 +144,10 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
               background: 'transparent',
-              border: '1px solid var(--color-sand)',
-              padding: '0.45rem',
+              border: '1.5px solid var(--brand-border)',
+              padding: '0.5rem',
               borderRadius: 'var(--radius-sm)',
-              color: 'var(--color-charcoal)',
+              color: 'var(--brand-dark)',
               cursor: 'pointer'
             }}
             aria-label="Abrir menú"
@@ -158,8 +161,8 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div style={{
-          background: 'var(--color-white)',
-          borderBottom: '1px solid var(--color-sand)',
+          background: 'var(--brand-cream-soft)',
+          borderBottom: '1.5px solid var(--brand-border)',
           padding: '1.25rem',
           display: 'flex',
           flexDirection: 'column',
@@ -171,8 +174,8 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
             className="btn btn-outline"
             style={{ width: '100%', justifyContent: 'flex-start' }}
           >
-            <ShoppingBag size={18} color="var(--gold-dark)" />
-            <span>Ver Catálogo de Prendas</span>
+            <ShoppingBag size={18} color="var(--brand-pink)" />
+            <span>Ver Catálogo de Pijamas</span>
           </button>
 
           <a
@@ -184,7 +187,7 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
             onClick={() => setMobileMenuOpen(false)}
           >
             <MessageCircle size={18} />
-            <span>Escribir por WhatsApp</span>
+            <span>Escribir por WhatsApp ({cleanPhone})</span>
           </a>
 
           <button
@@ -195,7 +198,7 @@ export default function Navbar({ currentView, setCurrentView, adminUser, onOpenA
             className="btn btn-dark"
             style={{ width: '100%', justifyContent: 'center' }}
           >
-            <ShieldCheck size={18} color="var(--gold-light)" />
+            <ShieldCheck size={18} color="var(--brand-yellow)" />
             <span>{adminUser ? 'Gestionar Productos (Admin)' : 'Ingresar a Panel Admin'}</span>
           </button>
         </div>

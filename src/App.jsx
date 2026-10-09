@@ -264,7 +264,7 @@ export default function App() {
             target="_blank"
             rel="noopener noreferrer"
             className="floating-whatsapp"
-            title="Escribir por WhatsApp a Luna Clara"
+            title={`Escribir por WhatsApp a ${STORE_NAME}`}
             aria-label="Contactar por WhatsApp"
           >
             <MessageCircle size={28} />

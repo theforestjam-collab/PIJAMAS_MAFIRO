@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { adminLogin, isSupabaseConfigured, STORE_NAME } from '../lib/supabase';
-import { Lock, Mail, ArrowLeft, ShieldCheck, Eye, EyeOff, Sparkles, KeyRound } from 'lucide-react';
+import { Lock, Mail, ArrowLeft, ShieldCheck, Eye, EyeOff, KeyRound } from 'lucide-react';
 
 export default function AdminLogin({ onLoginSuccess, onBackToCatalog, addToast }) {
   const [email, setEmail] = useState('');
@@ -12,7 +12,7 @@ export default function AdminLogin({ onLoginSuccess, onBackToCatalog, addToast }
   const isConfigured = isSupabaseConfigured();
 
   const handleFillDemo = () => {
-    setEmail('admin@lunaclara.com');
+    setEmail('admin@mafiro.com');
     setPassword('admin123');
   };
 
@@ -94,18 +94,25 @@ export default function AdminLogin({ onLoginSuccess, onBackToCatalog, addToast }
         {/* Header Icon */}
         <div style={{ textAlign: 'center', marginTop: '1rem', marginBottom: '1.75rem' }}>
           <div style={{
-            width: '56px',
-            height: '56px',
+            width: '68px',
+            height: '68px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #24201B 0%, #12100E 100%)',
-            border: '1px solid var(--gold-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            padding: '3px',
+            background: 'linear-gradient(135deg, var(--brand-pink) 0%, var(--brand-purple) 100%)',
             margin: '0 auto 1rem',
-            boxShadow: '0 8px 20px rgba(197, 160, 89, 0.25)'
+            boxShadow: '0 8px 22px var(--brand-pink-glow)'
           }}>
-            <Lock size={24} color="var(--gold-light)" />
+            <img
+              src="./logo-mafiro.png"
+              alt="Pijamas MAFIRO"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                backgroundColor: '#FFFFFF'
+              }}
+            />
           </div>
 
           <h2 style={{ fontSize: '1.6rem', fontWeight: 700, color: 'var(--color-noir)', marginBottom: '0.35rem', fontFamily: 'var(--font-serif)' }}>

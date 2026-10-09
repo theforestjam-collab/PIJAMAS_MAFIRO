@@ -137,7 +137,8 @@ export default function ProductCard({ product, onSelectProduct }) {
           <span style={{
             fontWeight: 800,
             fontSize: '1.05rem',
-            color: 'var(--color-noir)',
+            color: 'var(--brand-pink-deep)',
+            fontFamily: 'var(--font-serif)',
             whiteSpace: 'nowrap'
           }}>
             {formatPrice(product.precio)}

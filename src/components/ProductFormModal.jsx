@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { createProduct, updateProduct, normalizeProductVariants } from '../lib/supabase';
+import { compressImageToWebP, formatFileSize } from '../lib/imageOptimizer.js';
 import { 
   X, Upload, Plus, Trash2, Check, AlertCircle, 
-  Camera, Image as ImageIcon, Star 
+  Camera, Image as ImageIcon, Star, Zap 
 } from 'lucide-react';
-
 
 const COMMON_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Única'];
 const SUGGESTED_COLORS = [
-  'Rosa', 'Negro', 'Blanco', 'Beige', 'Champagne', 
-  'Crema', 'Azul', 'Verde', 'Terracota', 'Rojo', 'Gris'
+  'Rosa Pastel', 'Lila Lavanda', 'Blanco Marfil', 'Crema', 
+  'Miel Dorado', 'Rosa Coquette', 'Celeste Cielo', 'Amarillo Pastel', 'Gris Perla'
 ];
 
 export default function ProductFormModal({ product, onClose, onSaveSuccess, addToast }) {
@@ -34,6 +34,8 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
   const [coverPreview, setCoverPreview] = useState('');
   const [coverUrlInput, setCoverUrlInput] = useState('');
   const [showCoverSection, setShowCoverSection] = useState(false);
+  const [isOptimizingCover, setIsOptimizingCover] = useState(false);
+  const [coverCompressionInfo, setCoverCompressionInfo] = useState(null);
 
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
@@ -248,8 +250,8 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
     );
   };
 
-  // Asignar archivo desde cámara o galería a una variante específica
-  const handleVariantFileChange = (variantId, e) => {
+  // Asignar archivo desde cámara o galería a una variante específica con compresión WebP automática
+  const handleVariantFileChange = async (variantId, e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -262,25 +264,55 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
       return;
     }
 
-    const previewUrl = URL.createObjectURL(file);
+    // Indicador visual de compresión
     setVariantes((prev) =>
-      prev.map((v) => {
-        if (v.id === variantId) {
-          return {
-            ...v,
-            file,
-            previewUrl,
-            imagen_url: previewUrl
-          };
-        }
-        return v;
-      })
+      prev.map((v) => (v.id === variantId ? { ...v, isOptimizing: true } : v))
     );
 
-    // Si es la portada o la primera, actualizar preview de portada
-    const target = variantes.find((v) => v.id === variantId);
-    if (target?.isCover || variantes[0]?.id === variantId) {
-      setCoverPreview(previewUrl);
+    try {
+      const optimized = await compressImageToWebP(file, { maxWidth: 1200, maxHeight: 1500, quality: 0.82 });
+      
+      setVariantes((prev) =>
+        prev.map((v) => {
+          if (v.id === variantId) {
+            return {
+              ...v,
+              file: optimized.file,
+              previewUrl: optimized.previewUrl,
+              imagen_url: optimized.previewUrl,
+              isOptimizing: false,
+              compressionInfo: {
+                originalSize: optimized.originalSize,
+                compressedSize: optimized.compressedSize,
+                savedPercent: optimized.savedPercent
+              }
+            };
+          }
+          return v;
+        })
+      );
+
+      // Si es la portada o la primera, actualizar preview de portada
+      const target = variantes.find((v) => v.id === variantId);
+      if (target?.isCover || variantes[0]?.id === variantId) {
+        setCoverPreview(optimized.previewUrl);
+      }
+
+      addToast({
+        type: 'success',
+        title: '⚡ Imagen Optimizada WebP',
+        message: `${formatFileSize(optimized.originalSize)} ➔ ${formatFileSize(optimized.compressedSize)} (-${optimized.savedPercent}%)`
+      });
+    } catch (err) {
+      console.warn('Error optimizando imagen de variante:', err);
+      const previewUrl = URL.createObjectURL(file);
+      setVariantes((prev) =>
+        prev.map((v) =>
+          v.id === variantId
+            ? { ...v, file, previewUrl, imagen_url: previewUrl, isOptimizing: false }
+            : v
+        )
+      );
     }
   };
 
@@ -293,7 +325,9 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
             ...v,
             file: null,
             previewUrl: '',
-            imagen_url: ''
+            imagen_url: '',
+            compressionInfo: null,
+            isOptimizing: false
           };
         }
         return v;
@@ -318,12 +352,41 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
     );
   };
 
-  // Portada general opcional
-  const handleCoverFileChange = (e) => {
+  // Portada general opcional con compresión automática a WebP
+  const handleCoverFileChange = async (e) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      addToast({
+        type: 'error',
+        title: 'Formato no soportado',
+        message: 'Selecciona una imagen válida (JPG, PNG, WebP).'
+      });
+      return;
+    }
+
+    setIsOptimizingCover(true);
+    try {
+      const optimized = await compressImageToWebP(file, { maxWidth: 1200, maxHeight: 1500, quality: 0.82 });
+      setCoverFile(optimized.file);
+      setCoverPreview(optimized.previewUrl);
+      setCoverCompressionInfo({
+        originalSize: optimized.originalSize,
+        compressedSize: optimized.compressedSize,
+        savedPercent: optimized.savedPercent
+      });
+      addToast({
+        type: 'success',
+        title: '⚡ Portada Optimizada WebP',
+        message: `${formatFileSize(optimized.originalSize)} ➔ ${formatFileSize(optimized.compressedSize)} (-${optimized.savedPercent}%)`
+      });
+    } catch (err) {
+      console.warn('Error optimizando portada:', err);
       setCoverFile(file);
       setCoverPreview(URL.createObjectURL(file));
+    } finally {
+      setIsOptimizingCover(false);
     }
   };
 
@@ -838,10 +901,34 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
                           </div>
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1 }}>
-                            <div style={{ fontSize: '0.78rem', color: '#065F46', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                            <div style={{ fontSize: '0.78rem', color: '#065F46', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
                               <Check size={14} />
                               <span>Foto lista para {v.color}</span>
+                              {v.compressionInfo && (
+                                <span style={{
+                                  fontSize: '0.7rem',
+                                  color: '#065F46',
+                                  background: '#ECFDF5',
+                                  border: '1px solid #A7F3D0',
+                                  borderRadius: 'var(--radius-full)',
+                                  padding: '0.15rem 0.5rem',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  fontWeight: 700
+                                }}>
+                                  <Zap size={10} color="#10B981" />
+                                  <span>WebP ({formatFileSize(v.compressionInfo.compressedSize)} • -{v.compressionInfo.savedPercent}%)</span>
+                                </span>
+                              )}
                             </div>
+
+                            {v.isOptimizing && (
+                              <div style={{ fontSize: '0.74rem', color: 'var(--brand-purple)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <Zap size={12} color="var(--brand-pink)" />
+                                <span>⚡ Convirtiendo y optimizando a WebP...</span>
+                              </div>
+                            )}
 
                             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                               {/* Botón táctil para cambiar foto */}
@@ -1162,8 +1249,26 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverFileChange} />
                   </label>
                   {coverPreview && (
-                    <div style={{ width: '40px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--color-sand)' }}>
-                      <img src={coverPreview} alt="Portada" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <div style={{ width: '42px', height: '52px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--brand-border)' }}>
+                        <img src={coverPreview} alt="Portada" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      {isOptimizingCover && (
+                        <span style={{ fontSize: '0.74rem', color: 'var(--brand-purple)', fontWeight: 600 }}>⚡ Optimizando portada a WebP...</span>
+                      )}
+                      {coverCompressionInfo && (
+                        <span style={{
+                          fontSize: '0.72rem',
+                          color: '#047857',
+                          background: '#ECFDF5',
+                          border: '1px solid #A7F3D0',
+                          borderRadius: 'var(--radius-full)',
+                          padding: '0.15rem 0.55rem',
+                          fontWeight: 700
+                        }}>
+                          ⚡ WebP ({formatFileSize(coverCompressionInfo.compressedSize)} • -{coverCompressionInfo.savedPercent}%)
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>

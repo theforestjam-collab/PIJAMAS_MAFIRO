@@ -117,15 +117,15 @@ export default function Catalog({ products, onSelectProduct, loading }) {
         
         {/* Encabezado de Sección */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--gold-dark)', fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '0.5rem' }}>
-            <Sparkles size={14} />
-            <span>Nuestra Vitrina</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', color: 'var(--brand-pink-deep)', fontSize: '0.82rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.5rem', background: 'var(--brand-pink-soft)', padding: '0.35rem 0.9rem', borderRadius: 'var(--radius-full)', border: '1px solid rgba(255, 107, 151, 0.25)' }}>
+            <Sparkles size={14} color="var(--brand-pink)" />
+            <span>Colección Oficial • Pijamas & Más</span>
           </div>
-          <h2 style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', fontWeight: 700, color: 'var(--color-noir)', marginBottom: '0.5rem' }}>
-            Prendas Seleccionadas
+          <h2 style={{ fontSize: 'clamp(1.9rem, 3.8vw, 2.7rem)', fontWeight: 800, color: 'var(--brand-dark)', marginBottom: '0.6rem', fontFamily: 'var(--font-serif)' }}>
+            Pijamas Diseñadas para Soñar
           </h2>
-          <p style={{ color: 'var(--color-muted)', fontSize: '0.98rem', maxWidth: '540px', margin: '0 auto' }}>
-            Explora las piezas disponibles y contáctanos para asesorarte con tallas, medidas y entrega inmediata.
+          <p style={{ color: 'var(--brand-muted)', fontSize: '1rem', maxWidth: '580px', margin: '0 auto', lineHeight: 1.6 }}>
+            Explora nuestras prendas suaves y acogedoras. Consulta disponibilidad y realiza tu pedido directo por WhatsApp con asesoría inmediata.
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function Catalog({ products, onSelectProduct, loading }) {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por prenda, corte o material..."
+                placeholder="Buscar pijama por modelo, tela o color..."
                 className="input-field"
                 style={{ paddingLeft: '2.75rem' }}
               />
