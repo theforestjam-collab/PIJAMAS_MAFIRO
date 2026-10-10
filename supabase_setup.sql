@@ -14,17 +14,22 @@ CREATE TABLE IF NOT EXISTS public.productos (
     tallas TEXT[] NOT NULL DEFAULT '{}',
     colores TEXT[] NOT NULL DEFAULT '{}',
     variantes JSONB NOT NULL DEFAULT '[]'::jsonb,
+    imagenes_colores JSONB NOT NULL DEFAULT '[]'::jsonb,
     cantidad_disponible INT NOT NULL DEFAULT 0,
     disponible BOOLEAN NOT NULL DEFAULT true,
     imagen_url TEXT NOT NULL
 );
 
--- Si la tabla ya fue creada previamente, ejecuta esta línea para habilitar variantes con foto y tallas por color:
+-- Si la tabla ya fue creada previamente, ejecuta estas líneas para habilitar variantes y fotos por color:
 ALTER TABLE public.productos 
 ADD COLUMN IF NOT EXISTS variantes JSONB NOT NULL DEFAULT '[]'::jsonb;
 
--- Nota de Estructura de 'variantes':
--- Cada elemento contiene: { "id": "v1", "color": "Negro", "tallas": ["M", "2"], "imagen_url": "https://...", "stock": 4 }
+ALTER TABLE public.productos 
+ADD COLUMN IF NOT EXISTS imagenes_colores JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+-- Nota de Estructura de 'variantes' e 'imagenes_colores':
+-- 'variantes': [{ "id": "v1", "color": "Negro", "tallas": ["M", "2"], "imagen_url": "https://...", "stock": 4 }]
+-- 'imagenes_colores': [{ "color": "Negro", "url": "https://..." }]
 
 
 -- 2. HABILITAR ROW LEVEL SECURITY (RLS)

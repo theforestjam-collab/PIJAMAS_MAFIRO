@@ -22,6 +22,59 @@ export const supabase = isSupabaseConfigured()
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+// Bucket oficial de almacenamiento en Supabase Storage
+export const BUCKET_NAME = 'imagenes-productos';
+export const DEFAULT_PRODUCT_PLACEHOLDER = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80';
+
+/**
+ * Normaliza y resuelve la URL pública de una imagen de producto.
+ * - Si el valor es nulo, vacío o undefined: retorna un placeholder válido o cadena vacía.
+ * - Si ya empieza con http:// o https://: lo retorna tal cual sin modificaciones.
+ * - Si es un nombre de archivo o path relativo (ej: '1c67c2cf-cf25-48b3-93e0-d105459914bd' o 'nombre.webp'):
+ *   obtiene la URL pública mediante supabase.storage.from(BUCKET_NAME).getPublicUrl(rawPathOrUrl).
+ */
+export function getValidImageUrl(rawPathOrUrl, fallback = DEFAULT_PRODUCT_PLACEHOLDER) {
+  if (!rawPathOrUrl || typeof rawPathOrUrl !== 'string') {
+    return fallback || '';
+  }
+
+  const clean = rawPathOrUrl.trim();
+  if (!clean) {
+    return fallback || '';
+  }
+
+  // 1. Si ya es una URL absoluta HTTP o HTTPS, retornarla tal cual
+  if (clean.startsWith('http://') || clean.startsWith('https://')) {
+    return clean;
+  }
+
+  // 2. Si es data-uri (base64)
+  if (clean.startsWith('data:image/')) {
+    return clean;
+  }
+
+  // 3. Si es un Blob URL local temporal durante una sesión de subida
+  if (clean.startsWith('blob:')) {
+    return clean;
+  }
+
+  // 4. Si es un nombre de archivo o ruta relativa en el Storage de Supabase
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(clean);
+      if (data?.publicUrl) {
+        return data.publicUrl;
+      }
+    } catch (e) {
+      console.warn('Error resolviendo getPublicUrl en Supabase Storage:', e);
+    }
+  } else if (supabaseUrl) {
+    return `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${clean}`;
+  }
+
+  return clean || fallback;
+}
+
 // Clave para almacenamiento de demostración local si Supabase no está conectado
 const LOCAL_STORAGE_KEY = 'mafiro_demo_products_v1';
 const LOCAL_AUTH_KEY = 'mafiro_demo_auth_session';
@@ -41,12 +94,36 @@ export function normalizeProductVariants(product) {
 
   // 1. Si ya tiene variantes estructuradas válidas
   if (Array.isArray(product.variantes) && product.variantes.length > 0) {
-    return product.variantes.map((v, idx) => ({
-      id: v.id || `var-${idx}-${Date.now()}`,
-      color: typeof v === 'string' ? v : (v.color || 'Color'),
-      imagen_url: typeof v === 'string' ? (product.imagen_url || '') : (v.imagen_url || product.imagen_url || ''),
-      stock: v.stock !== undefined ? v.stock : product.cantidad_disponible,
-      tallas: Array.isArray(v.tallas) && v.tallas.length > 0 ? v.tallas : [...defaultSizes]
+    const firstNonBlob = product.variantes.find(v => {
+      const u = typeof v === 'string' ? '' : v.imagen_url;
+      return u && typeof u === 'string' && !u.startsWith('blob:');
+    });
+    const fallbackVarImg = (firstNonBlob && typeof firstNonBlob !== 'string' ? firstNonBlob.imagen_url : '') 
+      || (product.imagen_url && !product.imagen_url.startsWith('blob:') ? product.imagen_url : '');
+
+    return product.variantes.map((v, idx) => {
+      let rawImg = typeof v === 'string' ? (product.imagen_url || '') : (v.imagen_url || product.imagen_url || '');
+      if (rawImg && typeof rawImg === 'string' && rawImg.startsWith('blob:')) {
+        rawImg = fallbackVarImg;
+      }
+      return {
+        id: v.id || `var-${idx}-${Date.now()}`,
+        color: typeof v === 'string' ? v : (v.color || 'Color'),
+        imagen_url: getValidImageUrl(rawImg),
+        stock: v.stock !== undefined ? v.stock : product.cantidad_disponible,
+        tallas: Array.isArray(v.tallas) && v.tallas.length > 0 ? v.tallas : [...defaultSizes]
+      };
+    });
+  }
+
+  // 1.1 Si tiene array nativo de imagenes_colores
+  if (Array.isArray(product.imagenes_colores) && product.imagenes_colores.length > 0) {
+    return product.imagenes_colores.map((ic, idx) => ({
+      id: ic.id || `var-ic-${idx}-${Date.now()}`,
+      color: ic.color || `Color ${idx + 1}`,
+      imagen_url: getValidImageUrl(ic.url || ic.imagen_url || product.imagen_url || ''),
+      stock: product.cantidad_disponible,
+      tallas: [...defaultSizes]
     }));
   }
 
@@ -60,7 +137,7 @@ export function normalizeProductVariants(product) {
           return parsed.map((v, idx) => ({
             id: v.id || `var-${idx}-${Date.now()}`,
             color: v.color || 'Color',
-            imagen_url: v.imagen_url || product.imagen_url || '',
+            imagen_url: getValidImageUrl(v.imagen_url || product.imagen_url || ''),
             stock: v.stock !== undefined ? v.stock : product.cantidad_disponible,
             tallas: Array.isArray(v.tallas) && v.tallas.length > 0 ? v.tallas : [...defaultSizes]
           }));
@@ -76,7 +153,7 @@ export function normalizeProductVariants(product) {
     return product.colores.map((color, idx) => ({
       id: `var-synthesized-${idx}`,
       color: color,
-      imagen_url: product.imagen_url || '',
+      imagen_url: getValidImageUrl(product.imagen_url || ''),
       stock: product.cantidad_disponible,
       tallas: [...defaultSizes]
     }));
@@ -86,7 +163,7 @@ export function normalizeProductVariants(product) {
   return [{
     id: 'var-default',
     color: 'Único',
-    imagen_url: product.imagen_url || '',
+    imagen_url: getValidImageUrl(product.imagen_url || ''),
     stock: product.cantidad_disponible,
     tallas: [...defaultSizes]
   }];
@@ -237,18 +314,68 @@ export async function getProducts() {
       console.error('Error fetching products from Supabase:', error);
       throw error;
     }
-    return (data || []).map((p) => ({
-      ...p,
-      descripcion: cleanProductDescription(p.descripcion),
-      variantes: normalizeProductVariants(p)
-    }));
+    return (data || []).map((p) => {
+      const variantes = normalizeProductVariants(p);
+
+      // Soporte prioritario para variantes por color (imagenes_colores)
+      const imagenes_colores = Array.isArray(p.imagenes_colores) && p.imagenes_colores.length > 0
+        ? p.imagenes_colores.map((ic) => ({
+            color: ic.color || '',
+            url: getValidImageUrl(ic.url || ic.imagen_url),
+            imagen_url: getValidImageUrl(ic.imagen_url || ic.url)
+          }))
+        : variantes.map((v) => ({
+            color: v.color,
+            url: getValidImageUrl(v.imagen_url),
+            imagen_url: getValidImageUrl(v.imagen_url)
+          }));
+
+      // Si imagen_url principal está vacía o es un blob caducado de sesión previa,
+      // extraer prioritariamente la foto del primer color o variante
+      let resolvedMainImg = p.imagen_url;
+      if (!resolvedMainImg || typeof resolvedMainImg !== 'string' || resolvedMainImg.startsWith('blob:')) {
+        resolvedMainImg = imagenes_colores?.[0]?.url || variantes?.[0]?.imagen_url || '';
+      }
+      resolvedMainImg = getValidImageUrl(resolvedMainImg);
+
+      return {
+        ...p,
+        imagen_url: resolvedMainImg,
+        imagenes_colores,
+        descripcion: cleanProductDescription(p.descripcion),
+        variantes
+      };
+    });
   } else {
     // Modo demostración local
-    return getLocalProducts().map((p) => ({
-      ...p,
-      descripcion: cleanProductDescription(p.descripcion),
-      variantes: normalizeProductVariants(p)
-    }));
+    return getLocalProducts().map((p) => {
+      const variantes = normalizeProductVariants(p);
+      const imagenes_colores = Array.isArray(p.imagenes_colores) && p.imagenes_colores.length > 0
+        ? p.imagenes_colores.map((ic) => ({
+            color: ic.color || '',
+            url: getValidImageUrl(ic.url || ic.imagen_url),
+            imagen_url: getValidImageUrl(ic.imagen_url || ic.url)
+          }))
+        : variantes.map((v) => ({
+            color: v.color,
+            url: getValidImageUrl(v.imagen_url),
+            imagen_url: getValidImageUrl(v.imagen_url)
+          }));
+
+      let resolvedMainImg = p.imagen_url;
+      if (!resolvedMainImg || typeof resolvedMainImg !== 'string' || resolvedMainImg.startsWith('blob:')) {
+        resolvedMainImg = imagenes_colores?.[0]?.url || variantes?.[0]?.imagen_url || '';
+      }
+      resolvedMainImg = getValidImageUrl(resolvedMainImg);
+
+      return {
+        ...p,
+        imagen_url: resolvedMainImg,
+        imagenes_colores,
+        descripcion: cleanProductDescription(p.descripcion),
+        variantes
+      };
+    });
   }
 }
 
@@ -284,7 +411,7 @@ export async function uploadProductImage(file) {
     const filePath = `prendas/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('imagenes-productos')
+      .from(BUCKET_NAME)
       .upload(filePath, fileToUpload, {
         cacheControl: '3600',
         contentType: isWebP ? 'image/webp' : undefined,
@@ -297,10 +424,10 @@ export async function uploadProductImage(file) {
     }
 
     const { data } = supabase.storage
-      .from('imagenes-productos')
+      .from(BUCKET_NAME)
       .getPublicUrl(filePath);
 
-    return data.publicUrl;
+    return data?.publicUrl || '';
   } else {
     // Si estamos en demo local, convertimos a DataURL para que se vea inmediatamente
     return new Promise((resolve, reject) => {
@@ -319,9 +446,10 @@ export async function uploadProductImage(file) {
  */
 export function extractStoragePath(url) {
   if (!url || typeof url !== 'string') return null;
-  if (!url.includes('imagenes-productos/')) return null;
+  const marker = `${BUCKET_NAME}/`;
+  if (!url.includes(marker)) return null;
   try {
-    const parts = url.split('imagenes-productos/');
+    const parts = url.split(marker);
     if (parts.length > 1) {
       let relativePath = parts[1].split('?')[0]; // descartar parámetros query si hubieran
       relativePath = decodeURIComponent(relativePath).trim();
@@ -351,6 +479,10 @@ export async function createProduct(productData, coverImageFile = null) {
     // Si la variante tiene un archivo local nuevo para subir
     if (v.file) {
       variantImageUrl = await uploadProductImage(v.file);
+    } else if (variantImageUrl && !variantImageUrl.startsWith('blob:')) {
+      variantImageUrl = getValidImageUrl(variantImageUrl);
+    } else {
+      variantImageUrl = '';
     }
 
     const variantSizes = Array.isArray(v.tallas) && v.tallas.length > 0
@@ -370,19 +502,21 @@ export async function createProduct(productData, coverImageFile = null) {
   let finalCoverUrl = productData.imagen_url || '';
   if (coverImageFile) {
     finalCoverUrl = await uploadProductImage(coverImageFile);
-  } else if (!finalCoverUrl && processedVariants.length > 0) {
-    // Si no se asignó portada separada, usar la primera variante con foto
-    const firstWithPic = processedVariants.find((v) => v.imagen_url);
+  } else if (!finalCoverUrl || finalCoverUrl.startsWith('blob:')) {
+    // Si no se asignó portada separada, usar la primera variante con foto válida
+    const firstWithPic = processedVariants.find((v) => v.imagen_url && !v.imagen_url.startsWith('blob:'));
     if (firstWithPic) {
       finalCoverUrl = firstWithPic.imagen_url;
     }
   }
+  finalCoverUrl = getValidImageUrl(finalCoverUrl);
 
   // Si alguna variante no tiene foto propia, asignarle la portada para que no quede vacía
   processedVariants.forEach((v) => {
     if (!v.imagen_url && finalCoverUrl) {
       v.imagen_url = finalCoverUrl;
     }
+    v.imagen_url = getValidImageUrl(v.imagen_url);
   });
 
   if (!finalCoverUrl && processedVariants.length === 0) {
@@ -394,6 +528,13 @@ export async function createProduct(productData, coverImageFile = null) {
   const finalColores = derivedColors.length > 0 
     ? derivedColors 
     : (Array.isArray(productData.colores) && productData.colores.length > 0 ? productData.colores : ['Único']);
+
+  // Generar variantes por color imagenes_colores con URLs públicas absolutas
+  const imagenesColores = processedVariants.map((v) => ({
+    color: v.color,
+    url: getValidImageUrl(v.imagen_url),
+    imagen_url: getValidImageUrl(v.imagen_url)
+  }));
 
   // Extraer unión de tallas de todas las variantes para el catálogo y filtros generales
   const allVariantSizes = Array.from(new Set(
@@ -410,50 +551,68 @@ export async function createProduct(productData, coverImageFile = null) {
     tallas: finalTallas,
     colores: finalColores,
     variantes: processedVariants,
+    imagenes_colores: imagenesColores,
     cantidad_disponible: parseInt(productData.cantidad_disponible, 10) || 0,
     disponible: Boolean(productData.disponible),
     imagen_url: finalCoverUrl || (processedVariants[0]?.imagen_url || '')
   };
 
   if (isSupabaseConfigured() && supabase) {
-    // Intento 1: Guardar nativamente con columna 'variantes' JSONB
+    let insertedData = null;
     let { data, error } = await supabase
       .from('productos')
       .insert([payload])
       .select()
       .single();
 
-    // Si la columna 'variantes' aún no existe en Supabase (código 42703), usar respaldo resiliente
+    // Si alguna columna como 'imagenes_colores' o 'variantes' no existe aún (código 42703)
     if (error && error.code === '42703') {
-      console.info('Aviso: La columna "variantes" no existe en Supabase aún. Guardando con respaldo transparente en descripción.');
+      console.info('Aviso: Columna aún no presente en Supabase (42703). Guardando con compatibilidad resiliente.');
       const fallbackPayload = { ...payload };
-      delete fallbackPayload.variantes;
-      
-      const metaTag = `<!--LC_VAR:${JSON.stringify(processedVariants)}-->`;
-      fallbackPayload.descripcion = fallbackPayload.descripcion 
-        ? `${fallbackPayload.descripcion}\n\n${metaTag}` 
-        : metaTag;
+      delete fallbackPayload.imagenes_colores;
 
-      const retryResult = await supabase
+      let retryResult = await supabase
         .from('productos')
         .insert([fallbackPayload])
         .select()
         .single();
 
-      if (retryResult.error) {
-        console.error('Error insertando prenda con respaldo:', retryResult.error);
+      if (retryResult.error && retryResult.error.code === '42703') {
+        delete fallbackPayload.variantes;
+        const metaTag = `<!--LC_VAR:${JSON.stringify(processedVariants)}-->`;
+        fallbackPayload.descripcion = fallbackPayload.descripcion 
+          ? `${fallbackPayload.descripcion}\n\n${metaTag}` 
+          : metaTag;
+
+        const retry2 = await supabase
+          .from('productos')
+          .insert([fallbackPayload])
+          .select()
+          .single();
+
+        if (retry2.error) {
+          console.error('Error insertando prenda con respaldo:', retry2.error);
+          throw retry2.error;
+        }
+        insertedData = retry2.data;
+      } else if (retryResult.error) {
+        console.error('Error insertando prenda:', retryResult.error);
         throw retryResult.error;
+      } else {
+        insertedData = retryResult.data;
       }
-      data = retryResult.data;
     } else if (error) {
       console.error('Error creating product in Supabase:', error);
       throw error;
+    } else {
+      insertedData = data;
     }
 
     return {
-      ...data,
-      descripcion: cleanProductDescription(data.descripcion),
-      variantes: normalizeProductVariants(data)
+      ...insertedData,
+      imagenes_colores: imagenesColores,
+      descripcion: cleanProductDescription(insertedData.descripcion),
+      variantes: normalizeProductVariants(insertedData)
     };
   } else {
     // Modo local / demo
@@ -467,6 +626,7 @@ export async function createProduct(productData, coverImageFile = null) {
     setLocalProducts(updated);
     return {
       ...newProduct,
+      imagenes_colores: imagenesColores,
       variantes: normalizeProductVariants(newProduct)
     };
   }
@@ -490,6 +650,8 @@ export async function updateProduct(id, productData, newCoverImageFile = null) {
     // Si tiene un archivo nuevo adjunto
     if (v.file) {
       variantImageUrl = await uploadProductImage(v.file);
+    } else if (variantImageUrl && !variantImageUrl.startsWith('blob:')) {
+      variantImageUrl = getValidImageUrl(variantImageUrl);
     }
 
     const variantSizes = Array.isArray(v.tallas) && v.tallas.length > 0
@@ -509,22 +671,30 @@ export async function updateProduct(id, productData, newCoverImageFile = null) {
   let finalCoverUrl = productData.imagen_url || '';
   if (newCoverImageFile) {
     finalCoverUrl = await uploadProductImage(newCoverImageFile);
-  } else if (!finalCoverUrl && processedVariants.length > 0) {
-    const firstWithPic = processedVariants.find((v) => v.imagen_url);
+  } else if (!finalCoverUrl || finalCoverUrl.startsWith('blob:')) {
+    const firstWithPic = processedVariants.find((v) => v.imagen_url && !v.imagen_url.startsWith('blob:'));
     if (firstWithPic) finalCoverUrl = firstWithPic.imagen_url;
   }
+  finalCoverUrl = getValidImageUrl(finalCoverUrl);
 
   // Asegurar que ninguna variante quede sin imagen si hay una portada
   processedVariants.forEach((v) => {
     if (!v.imagen_url && finalCoverUrl) {
       v.imagen_url = finalCoverUrl;
     }
+    v.imagen_url = getValidImageUrl(v.imagen_url);
   });
 
   const derivedColors = processedVariants.map((v) => v.color).filter(Boolean);
   const finalColores = derivedColors.length > 0 
     ? derivedColors 
     : (Array.isArray(productData.colores) && productData.colores.length > 0 ? productData.colores : ['Único']);
+
+  const imagenesColores = processedVariants.map((v) => ({
+    color: v.color,
+    url: getValidImageUrl(v.imagen_url),
+    imagen_url: getValidImageUrl(v.imagen_url)
+  }));
 
   // Unión de todas las tallas de las variantes
   const allVariantSizes = Array.from(new Set(
@@ -541,13 +711,14 @@ export async function updateProduct(id, productData, newCoverImageFile = null) {
     tallas: finalTallas,
     colores: finalColores,
     variantes: processedVariants,
+    imagenes_colores: imagenesColores,
     cantidad_disponible: parseInt(productData.cantidad_disponible, 10) || 0,
     disponible: Boolean(productData.disponible),
     imagen_url: finalCoverUrl || (processedVariants[0]?.imagen_url || productData.imagen_url)
   };
 
   if (isSupabaseConfigured() && supabase) {
-    // Intento 1: Guardar nativamente con columna 'variantes' JSONB
+    let updatedData = null;
     let { data, error } = await supabase
       .from('productos')
       .update(payload)
@@ -555,38 +726,55 @@ export async function updateProduct(id, productData, newCoverImageFile = null) {
       .select()
       .single();
 
-    // Si la columna 'variantes' no existe en Supabase (código 42703), usar respaldo transparente
     if (error && error.code === '42703') {
-      console.info('Aviso: Guardando actualización con respaldo en descripción para variantes.');
+      console.info('Aviso: Columna aún no presente en Supabase (42703). Actualizando con compatibilidad resiliente.');
       const fallbackPayload = { ...payload };
-      delete fallbackPayload.variantes;
-      
-      const metaTag = `<!--LC_VAR:${JSON.stringify(processedVariants)}-->`;
-      fallbackPayload.descripcion = fallbackPayload.descripcion 
-        ? `${fallbackPayload.descripcion}\n\n${metaTag}` 
-        : metaTag;
+      delete fallbackPayload.imagenes_colores;
 
-      const retryResult = await supabase
+      let retryResult = await supabase
         .from('productos')
         .update(fallbackPayload)
         .eq('id', id)
         .select()
         .single();
 
-      if (retryResult.error) {
-        console.error('Error actualizando prenda con respaldo:', retryResult.error);
+      if (retryResult.error && retryResult.error.code === '42703') {
+        delete fallbackPayload.variantes;
+        const metaTag = `<!--LC_VAR:${JSON.stringify(processedVariants)}-->`;
+        fallbackPayload.descripcion = fallbackPayload.descripcion 
+          ? `${fallbackPayload.descripcion}\n\n${metaTag}` 
+          : metaTag;
+
+        const retry2 = await supabase
+          .from('productos')
+          .update(fallbackPayload)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (retry2.error) {
+          console.error('Error actualizando prenda con respaldo:', retry2.error);
+          throw retry2.error;
+        }
+        updatedData = retry2.data;
+      } else if (retryResult.error) {
+        console.error('Error updating product in Supabase:', retryResult.error);
         throw retryResult.error;
+      } else {
+        updatedData = retryResult.data;
       }
-      data = retryResult.data;
     } else if (error) {
       console.error('Error updating product in Supabase:', error);
       throw error;
+    } else {
+      updatedData = data;
     }
 
     return {
-      ...data,
-      descripcion: cleanProductDescription(data.descripcion),
-      variantes: normalizeProductVariants(data)
+      ...updatedData,
+      imagenes_colores: imagenesColores,
+      descripcion: cleanProductDescription(updatedData.descripcion),
+      variantes: normalizeProductVariants(updatedData)
     };
   } else {
     // Modo local / demo
@@ -599,6 +787,7 @@ export async function updateProduct(id, productData, newCoverImageFile = null) {
     setLocalProducts(list);
     return {
       ...updatedProduct,
+      imagenes_colores: imagenesColores,
       variantes: normalizeProductVariants(updatedProduct)
     };
   }
@@ -652,6 +841,14 @@ export async function deleteProduct(id, productOrImages = null) {
           const p = extractStoragePath(item.imagen_url);
           if (p) pathsToRemove.add(p);
         }
+        if (Array.isArray(item.imagenes_colores)) {
+          item.imagenes_colores.forEach((ic) => {
+            if (ic && (ic.url || ic.imagen_url)) {
+              const p = extractStoragePath(ic.url || ic.imagen_url);
+              if (p) pathsToRemove.add(p);
+            }
+          });
+        }
         if (Array.isArray(item.variantes)) {
           item.variantes.forEach((v) => {
             if (v && v.imagen_url) {
@@ -690,7 +887,7 @@ export async function deleteProduct(id, productOrImages = null) {
       try {
         console.info('Eliminando archivos físicos asociados en Supabase Storage:', pathsArray);
         const { data: removedData, error: removeError } = await supabase.storage
-          .from('imagenes-productos')
+          .from(BUCKET_NAME)
           .remove(pathsArray);
 
         if (removeError) {

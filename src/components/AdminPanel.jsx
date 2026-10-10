@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { adminLogout, toggleProductAvailability, isSupabaseConfigured, STORE_NAME } from '../lib/supabase';
+import { adminLogout, toggleProductAvailability, isSupabaseConfigured, STORE_NAME, getValidImageUrl } from '../lib/supabase';
 import ScrollToTop from './ScrollToTop';
 import { 
   Plus, LogOut, Search, Edit3, Trash2, CheckCircle2, 
@@ -467,9 +467,18 @@ export default function AdminPanel({
                             border: '1px solid var(--color-sand)'
                           }}>
                             <img
-                              src={p.imagen_url || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=200&q=80'}
+                              src={getValidImageUrl(
+                                p.imagenes_colores?.[0]?.url || 
+                                p.imagenes_colores?.[0]?.imagen_url || 
+                                p.variantes?.[0]?.imagen_url || 
+                                p.imagen_url
+                              )}
                               alt={p.nombre}
                               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=200&q=80';
+                              }}
                             />
                           </div>
                         </td>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createProduct, updateProduct, normalizeProductVariants } from '../lib/supabase';
+import { createProduct, updateProduct, normalizeProductVariants, getValidImageUrl } from '../lib/supabase';
 import { compressImageToWebP, formatFileSize } from '../lib/imageOptimizer.js';
 import { 
   X, Upload, Plus, Trash2, Check, AlertCircle, 
@@ -449,9 +449,12 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
         colores: sortedVariants.map((v) => v.color.trim()).filter(Boolean),
         variantes: sortedVariants.map((v) => ({
           ...v,
+          imagen_url: v.imagen_url && !v.imagen_url.startsWith('blob:') ? getValidImageUrl(v.imagen_url) : '',
           tallas: Array.isArray(v.tallas) && v.tallas.length > 0 ? v.tallas : (unionSizes.length > 0 ? unionSizes : ['S', 'M', 'L'])
         })),
-        imagen_url: coverPreview || ''
+        imagen_url: coverUrlInput.trim()
+          ? getValidImageUrl(coverUrlInput.trim())
+          : (coverPreview && !coverPreview.startsWith('blob:') ? getValidImageUrl(coverPreview) : '')
       };
 
       let result;
@@ -894,9 +897,13 @@ export default function ProductFormModal({ product, onClose, onSaveSuccess, addT
                             position: 'relative'
                           }}>
                             <img
-                              src={v.previewUrl || v.imagen_url}
+                              src={getValidImageUrl(v.previewUrl || v.imagen_url)}
                               alt={`Variante ${v.color}`}
                               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=200&q=80';
+                              }}
                             />
                           </div>
 
